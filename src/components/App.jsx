@@ -1,55 +1,58 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { FeedbackOptions } from './FeedbackOptions/FeedbackOptions';
 import { Section } from './common/Section/Section.styled';
 import { Statistics } from './FeedbackStatistics/FeedbackStatistics';
 
-export class App extends Component {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  };
 
-  total = 0;
-  positivePercentage = null;
+const FEEDBACK_OPTS = { good: 'good', neutral: 'neutral', bad: 'bad' };
 
-  calcPositivePercentage() {
-    const { good } = this.state;
-    const { total } = this;
+export function App() {
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setBad] = useState(0);
+
+  function calcPositivePercentage() {
+    const total  = calcTotalNumberFeedbacks();
 
     if (!total) return;
 
-    this.positivePercentage = parseInt((good / total) * 100);
+    return parseInt((good / total) * 100);
   }
 
-  calcTotalNumberFeedbacks() {
-    const { good, neutral, bad } = this.state;
-
-    this.total = good + neutral + bad;
+  function calcTotalNumberFeedbacks() {
+    return good + neutral + bad;
   }
 
-  onFeedbackOptClicked = type => {
-    this.setState(prevState => {
-      return { [type]: prevState[type] + 1 };
-    });
-  };
+  function onFeedbackOptClicked(type) {
+    let setStateFunc = null;
 
-  onRender() {
-    this.calcTotalNumberFeedbacks();
-    this.calcPositivePercentage();
+    switch (type) {
+      case FEEDBACK_OPTS.good:
+        setStateFunc = setGood;
+        break;
+      case FEEDBACK_OPTS.neutral:
+        setStateFunc = setNeutral;
+        break;
+      case FEEDBACK_OPTS.bad:
+        setStateFunc = setBad;
+        break;
+      
+      default:
+        return;
+    }
+
+    setStateFunc(prevState => prevState + 1);
   }
 
-  render() {
-    this.onRender();
-    const { good, neutral, bad } = this.state;
-    const { total, positivePercentage } = this;
+  const total = calcTotalNumberFeedbacks();
+  const positivePercentage = calcPositivePercentage();
 
     return (
       <>
         <Section title="Please leave a feedback">
           <FeedbackOptions
-            options={Object.keys(this.state)}
-            onLeaveFeedback={this.onFeedbackOptClicked}
+            options={Object.keys(FEEDBACK_OPTS)}
+            onLeaveFeedback={onFeedbackOptClicked}
           />
         </Section>
 
@@ -65,4 +68,3 @@ export class App extends Component {
       </>
     );
   }
-}
